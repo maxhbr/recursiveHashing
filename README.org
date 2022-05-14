@@ -1,0 +1,16 @@
+* This is experimental and tries to understand how to hash tree structures like JSON or YAML
+
+** Basics:
+- all strings are encoded with Utf8
+- we have chosen an hashing algorithm (lets go for sha256), that consumes ByteStrings
+- we have a function that renders a hash as a string in Base64 encoding
+** hashes of base types
+*** Hashing "null"
+*** Hashing "true"
+*** Hashing "false"
+*** Hashing number
+*** Hashing string
+** hashes of recursive types
+*** Hashing array
+*** Hashing object
+**** Hashing object members

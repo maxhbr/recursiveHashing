@@ -1,0 +1,63 @@
+cabal-version:      2.4
+name:               hs-recursive-hashing
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license:
+author:             Maximilian Huber
+maintainer:         gh@maxhbr.de
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files: CHANGELOG.md
+
+executable hs-recursive-hashing
+    main-is:          Main.hs
+
+    -- Modules included in this executable, other than Main.
+    other-modules:
+        RecHash
+
+    -- LANGUAGE extensions used by modules in this package.
+    -- other-extensions:
+    build-depends:    
+      base ^>=4.15.1.0,
+      aeson ^>=2.0.3.0,
+      cryptohash-sha256,
+      bytestring,
+      base64-bytestring ^>=1.2.1.0,
+      text ^>=1.2.5.0,
+      vector,
+      scientific,
+      cassava
+    hs-source-dirs:   app
+    default-language: Haskell2010
+
+Test-Suite test
+    type:       exitcode-stdio-1.0
+    main-is:    Test.hs
+    build-depends: 
+      base ^>=4.15.1.0,
+      QuickCheck,
+      HUnit,
+      hspec,
+      aeson ^>=2.0.3.0,
+      cryptohash-sha256,
+      bytestring,
+      base64-bytestring ^>=1.2.1.0,
+      text ^>=1.2.5.0,
+      vector,
+      scientific
+    hs-source-dirs: test app
+
+
