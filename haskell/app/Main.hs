@@ -23,10 +23,13 @@ putTestData = let
                     , "[]"
                     , "[123, \"456\"]"
                     , "[\"456\", 123]"
+                    , "[{},[],null]"
                     , "{}"
+                    , "{\"key1\": 123}"
+                    , "{\"key1\": 123, \"key2\":[456, {\"key3\": true}]}"
                     ]
-    testData = map (\j -> (j, M.fromJust $ recHashJsonBS j)) testDataJsons
-    in BSL.writeFile "testdata.csv" $ encode testData
+    testData = map (\j -> (j, hashJsonBS j, renderJsonBS j)) testDataJsons
+    in BSL.writeFile "../testdata.csv" $ encode testData
 
 generateTestdata = undefined
 

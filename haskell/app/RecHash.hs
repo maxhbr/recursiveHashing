@@ -15,58 +15,67 @@ import qualified Data.Text                     as T
 import qualified Data.Text.Encoding            as T
 import qualified Data.Vector                   as V
 
-hashToStr :: ByteString -> T.Text
-hashToStr = T.decodeUtf8 . B64.encode
-
-wrapStr :: T.Text -> T.Text ->  T.Text
-wrapStr "{" str = "{" `T.append` str `T.append` "}"
-wrapStr "[" str = "[" `T.append` str `T.append` "]"
-wrapStr  c  str = c `T.append` str `T.append` c
+import Debug.Trace (trace)
 
 class RecHash a where
-  recHash :: a -> ByteString
-  recHashStr :: a -> T.Text
-  recHashStr = hashToStr . recHash
+  render :: a -> T.Text
+  hash :: a -> T.Text
+  hash a = let
+      hashString :: T.Text -> T.Text
+      hashString = T.decodeUtf8 . B64.encode . SHA256.hash . T.encodeUtf8
+      rendered = render a
+      hashed = hashString rendered
+    in trace (show rendered ++ " -> " ++ show hashed) hashed
 
-instance RecHash ByteString where
-  recHash = SHA256.hash
+instance RecHash () where
+  render _ = "null"
 
 instance RecHash Bool where
-  recHash = \case
-    True  -> recHash ("true" :: ByteString)
-    False -> recHash ("false" :: ByteString)
-
-instance RecHash T.Text where
-  recHash = recHash . T.encodeUtf8
+  render = \case
+    True  -> "true"
+    False -> "false"
 
 instance RecHash Sc.Scientific where
-  recHash s = case Sc.floatingOrInteger s of
+  render s = case Sc.floatingOrInteger s of
     Left  rational -> undefined -- TODO
-    Right integral -> (recHash . T.pack . show) integral
+    Right integral -> (T.pack . show) integral
 
-listOfHashesToStr :: T.Text -> [T.Text] -> T.Text
-listOfHashesToStr c l = wrapStr c $ T.intercalate "," l
+instance RecHash T.Text where
+  render t = "\"" `T.append` t `T.append` "\""
 
 instance (RecHash a) => RecHash (V.Vector a) where
-  recHash = recHash . listOfHashesToStr "[" . map recHashStr . V.toList
+  render a = let
+      hashes = map hash (V.toList a)
+      combinedHashes = T.intercalate "," hashes
+    in "[" `T.append` combinedHashes `T.append` "]"
+
+data Member a = Member (K.Key, a)
+instance (RecHash a) => RecHash (Member a) where
+  render (Member (k, v)) =
+    let vHash = hash v
+    in (T.pack $ K.toString k) `T.append` ":" `T.append` vHash
 
 instance (RecHash a) => RecHash (KM.KeyMap a) where
-  recHash = let
-        memberToHashStr :: RecHash a => (K.Key, a) -> T.Text
-        memberToHashStr (k, v) =
-          let vHash = recHashStr v
-          in  (T.pack $ K.toString k) `T.append` ":" `T.append` vHash
-      in recHash . listOfHashesToStr "{" . List.sort . map memberToHashStr. KM.toList
+  render m = let
+      hashes :: [T.Text]
+      hashes = (map (hash . Member) . KM.toList) m
+      sortedHashes = List.sort hashes
+      combinedHashes = T.intercalate "," sortedHashes
+    in "{" `T.append` combinedHashes `T.append` "}"
 
 instance RecHash A.Value where
-    recHash (A.Object o) = recHash o
-    recHash (A.Array  a) = recHash a
-    recHash (A.String t) = recHash $ (wrapStr "\"" t)
-    recHash (A.Number s) = recHash s
-    recHash (A.Bool   b) = recHash b
-    recHash (A.Null    ) = recHash ("null" :: ByteString)
+  render (A.Object o) = render o
+  render (A.Array  a) = render a
+  render (A.String t) = render t
+  render (A.Number s) = render s
+  render (A.Bool   b) = render b
+  render (A.Null    ) = render ()
 
-recHashJsonBS :: ByteString -> Maybe T.Text
-recHashJsonBS bs = case (A.decode (BSL.fromStrict bs) :: Maybe A.Value) of
-  Just decoded -> Just $ recHashStr decoded
-  Nothing      -> Nothing
+data JSONBS = JSONBS ByteString
+instance RecHash JSONBS where
+  render (JSONBS bs) = case (A.decode (BSL.fromStrict bs) :: Maybe A.Value) of
+    Just decoded -> render decoded
+    Nothing      -> undefined
+
+renderJsonBS = render . JSONBS
+hashJsonBS = hash . JSONBS

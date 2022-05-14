@@ -1,16 +1,61 @@
 * This is experimental and tries to understand how to hash tree structures like JSON or YAML
 
 ** Basics:
-- all strings are encoded with Utf8
-- we have chosen an hashing algorithm (lets go for sha256), that consumes ByteStrings
-- we have a function that renders a hash as a string in Base64 encoding
+We will define a function ~render~, that takes a JSON and generates a String from it, that we will use for hashing.
+
+Lets have the function ~hashString~, which
+- takes a string
+- converts that string into byte representation, using utf8 encoding
+- hashes these bytes with the sha256 algorithm and
+- returns the result as a base64 encoded string
+
+This function satisfies the following:
+#+BEGIN_SRC
+hashString("") = tbd.
+hashString("example") = tbd.
+#+END_SRC
+
+With these two functions can we define ~hash~ as their combination: ~hash(json) = hashString(render(json))~
+
 ** hashes of base types
-*** Hashing "null"
-*** Hashing "true"
-*** Hashing "false"
+Define the ~render~ function for base types as follows:
+
+#+BEGIN_SRC
+render( null ) = "null"
+render( true ) = "true"
+render( false ) = "false"
+#+END_SRC
+
 *** Hashing number
+Hashing of numbers is just defined for integrals.
+Exponents are removed and the result is written as an integer of arbitrary size. So it should satisfy the following examples:
+
+#+BEGIN_SRC
+render( 0 ) = "0"
+render( 1234 ) = "1234"
+render( -1234 ) = "-1234"
+render( 1234e3 ) = "1234000"
+render( 1234E3 ) = "1234000"
+#+END_SRC
+
 *** Hashing string
+Strings are hashed by just wrapping them in ~"~.
+
+#+BEGIN_SRC
+render( "" ) = "\"\""
+render( "abc def" ) = "\"abc def\""
+#+END_SRC
+
 ** hashes of recursive types
+Recursive types are solved by recursion.
+
 *** Hashing array
+Arrays are hashed, by hashing each element, and then composing them
+
+#+BEGIN_SRC
+render( [] ) = "[]"
+render( "[123,"456"]" ) = "[" + hash(123) + "," + hash("456") +"]"
+#+END_SRC
+
 *** Hashing object
 **** Hashing object members

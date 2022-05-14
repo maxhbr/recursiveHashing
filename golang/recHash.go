@@ -14,48 +14,32 @@ func hashBytes(input []byte) string {
 	return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
 }
 
-func hashJsonNull() string {
-	return hashBytes([]byte("null"))
+func hashString(input string) string {
+	return hashBytes([]byte(input))
 }
 
-func hashJsonBool(input bool) string {
-	if input {
-		return hashBytes([]byte("true"))
-	} else {
-		return hashBytes([]byte("false"))
-	}
-}
-
-func hashJsonNumber(input float64) string {
-	return hashBytes([]byte(fmt.Sprint(int(input))))
-}
-
-func hashJsonString(input string) string {
-	return hashBytes([]byte("\"" + input + "\""))
-}
-
-func recHash(input interface{}) string {
+func render(input interface{}) string {
 	switch v := input.(type) {
 	default:
 		err := fmt.Errorf("unexpected type %T", v)
 		fmt.Println(err)
 		return "err."
 	case nil:
-		return hashJsonNull()
+		return "null"
 	case []interface{}:
 		acc := "["
 		for i, element := range input.([]interface{}) {
 			if i != 0 {
 				acc += ","
 			}
-			acc += recHash(element)
+			acc += hash(element)
 		}
 		acc += "]"
-		return hashBytes([]byte(acc))
+		return acc
 	case map[string]interface{}:
 		var hashes []string
 		for key, element := range input.(map[string]interface{}) {
-			hashes = append(hashes, hashBytes([]byte(key+":"+recHash(element))))
+			hashes = append(hashes, hashString(key+":"+hash(element)))
 		}
 		sort.Strings(hashes)
 		acc := "{"
@@ -63,17 +47,28 @@ func recHash(input interface{}) string {
 			if i != 0 {
 				acc += ","
 			}
-			acc += recHash(element)
+			acc += element
 		}
 		acc += "}"
-		return hashBytes([]byte(acc))
+		return acc
 	case bool:
-		return hashJsonBool(input.(bool))
+		if input.(bool) {
+			return "true"
+		} else {
+			return "false"
+		}
 	case float64:
-		return hashJsonNumber(input.(float64))
+		return fmt.Sprint(int(input.(float64)))
 	case string:
-		return hashJsonString(input.(string))
+		return "\"" + input.(string) + "\""
 	}
+}
+
+func hash(input interface{}) string {
+	rendered := render(input)
+	hashed := hashString(rendered)
+	fmt.Printf("%s -> %s\n", rendered, hashed)
+	return hashed
 }
 
 func parseJson(input string) interface{} {
@@ -85,10 +80,10 @@ func parseJson(input string) interface{} {
 	return nil
 }
 
-func recHashJson(input string) string {
-	return recHash(parseJson(input))
+func renderJson(input string) string {
+	return render(parseJson(input))
 }
 
-func main() {
-	fmt.Println("Hello, world.")
+func hashJson(input string) string {
+	return hash(parseJson(input))
 }
