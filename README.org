@@ -39,7 +39,7 @@ render( 1234E3 ) = "1234000"
 #+END_SRC
 
 *** Hashing string
-Strings are hashed by just wrapping them in ~"~.
+Strings are hashed by just wrapping them in ~"~
 
 #+BEGIN_SRC
 render( "" ) = "\"\""
@@ -78,3 +78,6 @@ $memberHashes = [ hash( $member1 ), hash( $member2 ), hash( $member3 ) ]
 $sortedHashes = sort( memberHashes )
 render( $object ) = "{" + $sortedHashes[0] + "," + $sortedHashes[1] + "," + $sortedHashes[2] + "}"
 #+END_SRC
+
+** TODOs:
+*** TODO why recursive hashing instead of recursive rendering and hashing at the end?
