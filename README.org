@@ -58,4 +58,23 @@ render( "[123,"456"]" ) = "[" + hash(123) + "," + hash("456") +"]"
 #+END_SRC
 
 *** Hashing object
+An object consists of members. Let us assume, that keys are unique, otherwise the hash is undefined.
+
 **** Hashing object members
+A member consists of a ~key~ (string) and a ~value~. The rendered string is the ~key~ seperated from ~hash( value )~ by a ~:~:
+
+#+BEGIN_SRC
+render( member ) = member.key + ":" + hash (member.value)
+#+END_SRC
+
+**** Hashing a whole object
+first hash every member, sort the hashes alphabetically, and composing them similarly to arrays, but wrapped with ~{..}~
+
+#+BEGIN_SRC
+render( {} ) = "{}"
+
+# let $object be an object containing of the three members $member1, $member2, $member3
+$memberHashes = [ hash( $member1 ), hash( $member2 ), hash( $member3 ) ]
+$sortedHashes = sort( memberHashes )
+render( $object ) = "{" + $sortedHashes[0] + "," + $sortedHashes[1] + "," + $sortedHashes[2] + "}"
+#+END_SRC
