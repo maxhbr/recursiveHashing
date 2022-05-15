@@ -79,5 +79,21 @@ $sortedHashes = sort( memberHashes )
 render( $object ) = "{" + $sortedHashes[0] + "," + $sortedHashes[1] + "," + $sortedHashes[2] + "}"
 #+END_SRC
 
+** There is no overlap:
+Rendered results are of the following forms:
+
+#+BEGIN_SRC
+null
+true
+false
+$INTEGER
+"$STRING"
+[]
+[$HASH1,$HASH2,..]
+{}
+{$HASH1,$HASH2,..}
+#+END_SRC
+
+It is obvious, that there is no overlap bewteen renderings (up to hash collitions).
 ** TODOs:
 *** TODO why recursive hashing instead of recursive rendering and hashing at the end?
