@@ -39,7 +39,7 @@ render( 1234E3 ) = "1234000"
 #+END_SRC
 
 *** Hashing string
-Strings are hashed by just wrapping them in ~"~
+Strings are rendered by just wrapping them in quotes
 
 #+BEGIN_SRC
 render( "" ) = "\"\""
